@@ -20,8 +20,8 @@ int	find_errors(char *str1, char *str2)
 
 	temp1 = ft_itoa(ft_atoi(str1));
 	temp2 = ft_itoa(ft_atoi(str2));
-	if (ft_strcmp(temp1, str1) != 0 || ft_strcmp(temp2, str2) != 0 /*||
-		ft_atoi(str1) < 7 || ft_atoi(str2) < 6*/)
+	if (ft_strcmp(temp1, str1) != 0 || ft_strcmp(temp2, str2) != 0 ||
+		ft_atoi(str1) < 7 || ft_atoi(str2) < 6)
 	{
 		ft_memdel((void**)&temp1);
 		ft_memdel((void**)&temp2);
@@ -205,11 +205,7 @@ char **create_map(int x, int y)
 int 	is_winning_play(char **map, int j)
 {
 	if (can_play(map, j) == -1)
-	{
-//		ft_printf("%c\n", map[0][j]);
-//		ft_printf("WUT?\n");
 		return (0);
-	}
 	play(map, j, 'X');
 	if (is_map_won(map))
 	{
@@ -293,11 +289,22 @@ void	ai_plays(char **map)
 	int lul;
 
 	j = 0;
-	lul = 0;
 	while (map[0][j] != '\0')
 	{
-		if (is_winning_play_ai(map, j) || is_winning_play(map, j))
+		if (is_winning_play_ai(map, j))
 		{
+			play(map, j, 'O');
+			ft_printf("dad");
+			return ;
+		}
+		j++;
+	}
+	j = 0;
+	while (map[0][j] != '\0')
+	{
+		if (is_winning_play(map, j))
+		{
+			ft_printf("dad");
 			play(map, j, 'O');
 			return ;
 		}
@@ -328,64 +335,61 @@ int main(int argc, char **argv)
 		return (0);
 	}
 	map = create_map(ft_atoi(argv[2]), ft_atoi(argv[1]));
-	int i = 0;
+	int i;
 	char *buff;
 	int turn = 0;
 	while (1)
 	{
 		i = 0;
+		if (turn % 2 == 0)
 		{
-			if (turn % 2 == 0)
+			get_next_line(0, &buff);
+			while (check_input(map, buff))
 			{
+				ft_printf("Please, enter valid number :)\n");
+				ft_memdel((void**)&buff);
 				get_next_line(0, &buff);
-				if (check_input(map, buff))
-					ft_printf("Please, enter valid number :)\n");
-				else
-					play(map, ft_atoi(buff), 'X');
 			}
-			else
+			play(map, ft_atoi(buff), 'X');
+		}
+		else
+		{
+			ai_plays(map);
+		}
+		ft_printf("\n");
+		turn++;
+		if (is_map_won(map) == 1)
+		{
+			ft_printf("Player won!\n");
+			turn = -42;
+		}
+		else if (is_map_won(map) == 2)
+		{
+			ft_printf("AI won!\n");
+			turn = -42;
+		}
+		if (is_map_over(map))
+		{
+			ft_printf("Tie!\n");
+			turn = -42;
+		}
+		if (ft_atoi(argv[2]) < 11)
+		{
+			while (i < ft_atoi(argv[2]))
 			{
-				ai_plays(map);
-			}
-			ft_printf("\n");
-			turn++;
-			if (is_map_won(map) == 1)
-			{
-				ft_printf("Player won!\n");
-				turn = -42;
-			}
-			else if (is_map_won(map) == 2)
-			{
-				ft_printf("AI won!\n");
-				turn = -42;
-			}
-			if (is_map_over(map))
-			{
-				ft_printf("Tie!");
-				turn = -42;
-			}
-			while (map[i])
-			{
-				ft_putendl(map[i]);
+				ft_printf("%i", i);
 				i++;
 			}
-			if (turn == -42)
-				return (0);
 		}
+		i = 0;
+		ft_printf("\n");
+		while (map[i])
+		{
+			ft_putendl(map[i]);
+			i++;
+		}
+		if (turn == -42)
+			break ;
 		ft_memdel((void**)&buff);
 	}
-/*	int i = 0;
-	play(map, 2, 'X');
-	play(map, 2, 'X');
-	play(map, 2, 'X');
-	play(map, 2, 'X');
-	play(map, 2, 'X');
-	can_play(map, 2);
-	play(map, 2, 'X');
-	can_play(map, 2);
-	while (map[i])
-			{
-				ft_putendl(map[i]);
-				i++;
-			}*/
 }
