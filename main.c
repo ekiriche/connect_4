@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "./ft_printf/ft_printf.h"
-
+#include <time.h>
 int	find_errors(char *str1, char *str2)
 {
 	char *temp1;
@@ -242,6 +242,7 @@ void	ai_plays(char **map)
 		}
 		j++;
 	}
+	srand(time(NULL));
 	lul = rand() % width_of_array(map);
 	play(map, lul, 'O');
 }
