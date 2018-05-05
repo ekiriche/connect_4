@@ -12,6 +12,7 @@
 
 #include "./ft_printf/ft_printf.h"
 #include <time.h>
+
 int	find_errors(char *str1, char *str2)
 {
 	char *temp1;
@@ -19,8 +20,8 @@ int	find_errors(char *str1, char *str2)
 
 	temp1 = ft_itoa(ft_atoi(str1));
 	temp2 = ft_itoa(ft_atoi(str2));
-	if (ft_strcmp(temp1, str1) != 0 || ft_strcmp(temp2, str2) != 0 ||
-		ft_atoi(str1) < 6 || ft_atoi(str2) < 7)
+	if (ft_strcmp(temp1, str1) != 0 || ft_strcmp(temp2, str2) != 0 /*||
+		ft_atoi(str1) < 7 || ft_atoi(str2) < 6*/)
 	{
 		ft_memdel((void**)&temp1);
 		ft_memdel((void**)&temp2);
@@ -54,7 +55,10 @@ int		height_of_array(char **map)
 int		can_play(char **map, int j)
 {
 	if (map[0][j] != '.')
+	{
+		ft_printf("WUT?\n");
 		return (-1);
+	}
 	return (1);
 }
 
@@ -200,8 +204,12 @@ char **create_map(int x, int y)
 
 int 	is_winning_play(char **map, int j)
 {
-	if (!can_play(map, j))
+	if (can_play(map, j) == -1)
+	{
+//		ft_printf("%c\n", map[0][j]);
+//		ft_printf("WUT?\n");
 		return (0);
+	}
 	play(map, j, 'X');
 	if (is_map_won(map))
 	{
@@ -214,8 +222,11 @@ int 	is_winning_play(char **map, int j)
 
 int 	is_winning_play_ai(char **map, int j)
 {
-	if (!can_play(map, j))
+	if (can_play(map, j) == -1)
+	{
+
 		return (0);
+	}
 	play(map, j, 'O');
 	if (is_map_won(map))
 	{
@@ -224,6 +235,56 @@ int 	is_winning_play_ai(char **map, int j)
 	}
 	unplay(map, j);
 	return (0);
+}
+
+int 	count_winning_plays(char **map)
+{
+	int j;
+	int count;
+
+	j = 0;
+	count = 0;
+	while (map[0][j] != '\0')
+	{
+		if (is_winning_play(map, j))
+			count++;
+		j++;
+	}
+	if (count >= 2)
+		return (2);
+	if (count == 1)
+		return (1);
+	return (0);
+}
+
+int 	find_da_way(char **map, int j)
+{
+	int flag = 0;
+	int k;
+
+	if (can_play(map, j) == -1)
+		return (0);
+	play(map, j, 'O');
+	k = 0;
+	while (map[0][k] != '\0')
+	{
+		if (can_play(map, k) == 1)
+		{
+			play(map, k, 'X');
+			if (count_winning_plays(map) == 2)
+			{
+				unplay(map, k);
+				flag = 1;
+				break ;
+			}
+			unplay(map, k);
+		}
+		k++;
+	}
+	unplay(map, j);
+	if (flag == 1)
+		return (0);
+	return (1);
 }
 
 void	ai_plays(char **map)
@@ -244,6 +305,16 @@ void	ai_plays(char **map)
 	}
 	srand(time(NULL));
 	lul = rand() % width_of_array(map);
+	while (can_play(map, lul) == -1)
+		lul = rand() % width_of_array(map);
+	int dud = 0;
+	while (find_da_way(map, lul) == 0 && dud < 100)
+	{
+		lul = rand() % width_of_array(map);
+		while (can_play(map, lul) == -1)
+			lul = rand() % width_of_array(map);
+		dud++;
+	}
 	play(map, lul, 'O');
 }
 
@@ -251,12 +322,12 @@ int main(int argc, char **argv)
 {
 	char **map;
 
-	if (argc != 3 || find_errors(argv[1], argv[2]))
+	if (argc != 3 || find_errors(argv[2], argv[1]))
 	{
 		write(2, "Error\n", 6);
 		return (0);
 	}
-	map = create_map(ft_atoi(argv[1]), ft_atoi(argv[2]));
+	map = create_map(ft_atoi(argv[2]), ft_atoi(argv[1]));
 	int i = 0;
 	char *buff;
 	int turn = 0;
@@ -264,11 +335,6 @@ int main(int argc, char **argv)
 	{
 		i = 0;
 		{
-			while (map[i])
-			{
-				ft_putendl(map[i]);
-				i++;
-			}
 			if (turn % 2 == 0)
 			{
 				get_next_line(0, &buff);
@@ -281,23 +347,45 @@ int main(int argc, char **argv)
 			{
 				ai_plays(map);
 			}
+			ft_printf("\n");
 			turn++;
 			if (is_map_won(map) == 1)
 			{
 				ft_printf("Player won!\n");
-				return (0);
+				turn = -42;
 			}
 			else if (is_map_won(map) == 2)
 			{
 				ft_printf("AI won!\n");
-				return (0);
+				turn = -42;
 			}
 			if (is_map_over(map))
 			{
 				ft_printf("Tie!");
-				return (0);
+				turn = -42;
 			}
+			while (map[i])
+			{
+				ft_putendl(map[i]);
+				i++;
+			}
+			if (turn == -42)
+				return (0);
 		}
 		ft_memdel((void**)&buff);
 	}
+/*	int i = 0;
+	play(map, 2, 'X');
+	play(map, 2, 'X');
+	play(map, 2, 'X');
+	play(map, 2, 'X');
+	play(map, 2, 'X');
+	can_play(map, 2);
+	play(map, 2, 'X');
+	can_play(map, 2);
+	while (map[i])
+			{
+				ft_putendl(map[i]);
+				i++;
+			}*/
 }
