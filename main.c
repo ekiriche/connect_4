@@ -57,6 +57,18 @@ int 	check_input(char **map, char *input)
 	return (0);
 }
 
+int 	is_map_over(char **ans)
+{
+	int j;
+
+	j = 0;
+	while (ans[0][j] != '.' && ans[0][j] != '\0')
+		j++;
+	if (ans[0][j] == '\0')
+		return (1);
+	return (0);
+}
+
 int		is_map_won(char **map)
 {
 	int i;
@@ -196,6 +208,11 @@ int main(int argc, char **argv)
 			else
 				play(map, ft_atoi(buff), 'O');
 			turn++;
+			if (is_map_over(map))
+			{
+				ft_printf("Tie!");
+				return (0);
+			}
 			if (is_map_won(map) == 1)
 			{
 				ft_printf("Player won!\n");
